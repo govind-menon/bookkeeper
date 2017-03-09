@@ -128,9 +128,6 @@ public class Bookie extends BookieCriticalThread {
     private final LedgerDirsManager ledgerDirsManager;
     private LedgerDirsManager indexDirsManager;
 
-    // ZooKeeper client instance for the Bookie
-    ZooKeeper zk;
-
     // Running flag
     private volatile boolean running = false;
     // Flag identify whether it is in shutting down progress
@@ -891,6 +888,7 @@ public class Bookie extends BookieCriticalThread {
             }
         };
         try {
+            ZooKeeper zk = instantiateZookeeperClient(conf);
             Stat stat = zk.exists(regPath, zkPrevRegNodewatcher);
             if (null != stat) {
                 // if the ephemeral owner isn't current zookeeper client
@@ -947,6 +945,14 @@ public class Bookie extends BookieCriticalThread {
     }
 
     private void doRegisterBookie(final String regPath) throws IOException {
+        ZooKeeper zk = null;
+        try {
+            zk = instantiateZookeeperClient(conf);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (KeeperException e) {
+            e.printStackTrace();
+        }
         if (null == zk) {
             // zookeeper instance is null, means not register itself to zk
             return;
@@ -977,6 +983,13 @@ public class Bookie extends BookieCriticalThread {
             // exit here as this is a fatal error.
             throw new IOException(ie);
         }
+        try {
+            LOG.info(zk.getData(regPath, false, null).toString());
+        } catch (KeeperException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -1001,6 +1014,16 @@ public class Bookie extends BookieCriticalThread {
             return;
         }
         LOG.info("Transitioning Bookie to Writable mode and will serve read/write requests.");
+        ZooKeeper zk = null;
+        try {
+            zk = instantiateZookeeperClient(conf);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (KeeperException e) {
+            e.printStackTrace();
+        }
         // change zookeeper state only when using zookeeper
         if (null == zk) {
             return;
@@ -1059,6 +1082,16 @@ public class Bookie extends BookieCriticalThread {
         LOG.info("Transitioning Bookie to ReadOnly mode,"
                 + " and will serve only read requests from clients!");
         // change zookeeper state only when using zookeeper
+        ZooKeeper zk = null;
+        try {
+            zk = instantiateZookeeperClient(conf);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (KeeperException e) {
+            e.printStackTrace();
+        }
         if (null == zk) {
             return;
         }
@@ -1184,9 +1217,6 @@ public class Bookie extends BookieCriticalThread {
                 if (indexDirsManager != ledgerDirsManager) {
                     indexDirsManager.shutdown();
                 }
-
-                // Shutdown the ZK client
-                if(zk != null) zk.close();
             }
         } catch (InterruptedException ie) {
             LOG.error("Interrupted during shutting down bookie : ", ie);

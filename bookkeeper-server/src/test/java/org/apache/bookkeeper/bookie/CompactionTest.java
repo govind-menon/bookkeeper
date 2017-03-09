@@ -65,13 +65,7 @@ import static org.junit.Assert.*;
 /**
  * This class tests the entry log compaction functionality.
  */
-@RunWith(Parameterized.class)
 public class CompactionTest extends BookKeeperClusterTestCase {
-    @Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {{true}, {false}});
-    }
-
     private boolean isThrottleByBytes;
 
     private final static Logger LOG = LoggerFactory.getLogger(CompactionTest.class);
@@ -89,8 +83,10 @@ public class CompactionTest extends BookKeeperClusterTestCase {
 
     String msg;
 
-    public CompactionTest(boolean isByBytes) {
+    public CompactionTest() {
         super(NUM_BOOKIES);
+
+        boolean isByBytes = true;
 
         this.isThrottleByBytes = isByBytes;
         this.digestType = DigestType.CRC32;

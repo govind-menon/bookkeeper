@@ -93,7 +93,6 @@ public class BookieInitializationTest extends BookKeeperClusterTestCase {
                     throws IOException, KeeperException, InterruptedException,
                     BookieException {
                 MockBookie bookie = new MockBookie(conf);
-                bookie.zk = zkc;
                 zkc.close();
                 return bookie;
             };
@@ -118,7 +117,6 @@ public class BookieInitializationTest extends BookKeeperClusterTestCase {
                 + conf.getBookiePort();
 
         MockBookie b = new MockBookie(conf);
-        b.zk = zkc;
         b.testRegisterBookie(conf);
         Assert.assertNotNull("Bookie registration node doesn't exists!",
                              zkc.exists(bkRegPath, false));
@@ -147,7 +145,6 @@ public class BookieInitializationTest extends BookKeeperClusterTestCase {
                 + conf.getBookiePort();
 
         MockBookie b = new MockBookie(conf);
-        b.zk = zkc;
         b.testRegisterBookie(conf);
         Stat bkRegNode1 = zkc.exists(bkRegPath, false);
         Assert.assertNotNull("Bookie registration node doesn't exists!",
@@ -156,7 +153,6 @@ public class BookieInitializationTest extends BookKeeperClusterTestCase {
         // simulating bookie restart, on restart bookie will create new
         // zkclient and doing the registration.
         createNewZKClient();
-        b.zk = newzk;
 
         // deleting the znode, so that the bookie registration should
         // continue successfully on NodeDeleted event
@@ -211,7 +207,6 @@ public class BookieInitializationTest extends BookKeeperClusterTestCase {
                 + conf.getBookiePort();
 
         MockBookie b = new MockBookie(conf);
-        b.zk = zkc;
         b.testRegisterBookie(conf);
         Stat bkRegNode1 = zkc.exists(bkRegPath, false);
         Assert.assertNotNull("Bookie registration node doesn't exists!",
@@ -220,7 +215,6 @@ public class BookieInitializationTest extends BookKeeperClusterTestCase {
         // simulating bookie restart, on restart bookie will create new
         // zkclient and doing the registration.
         createNewZKClient();
-        b.zk = newzk;
         try {
             b.testRegisterBookie(conf);
             fail("Should throw NodeExistsException as the znode is not getting expired");
